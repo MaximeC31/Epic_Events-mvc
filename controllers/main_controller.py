@@ -24,10 +24,15 @@ def run():
 
     match choice:
         case "1":
-            run_login()
+            collaborator = run_login()
+            if collaborator is None:
+                return
+            return collaborator
+
         case "2":
             print("Fermeture de l'application")
             sys.exit(0)
+
         case _:
             print("Choix invalide")
             sys.exit(1)
