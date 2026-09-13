@@ -11,7 +11,3 @@ def show_login_form():
 
 def show_login_error(message):
     print(f"Erreur : {message}")
-
-
-def show_login_success(collaborator):
-    print(f"Bienvenue {collaborator.first_name} {collaborator.last_name}")

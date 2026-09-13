@@ -1,4 +1,4 @@
-from views.login_view import show_login_form, show_login_error, show_login_success
+from views.login_view import show_login_form, show_login_error
 from models.database import session_scope
 from controllers.authentication_controller import verify_password
 from models.collaborator import Role, Collaborator
@@ -34,5 +34,4 @@ def run_login():
 
         session.expunge(collaborator)
 
-    show_login_success(collaborator)
     return collaborator
