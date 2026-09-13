@@ -1,38 +1,46 @@
 import sys
 
-from sqlalchemy import select
-
 from controllers.login_controller import run_login
-from controllers.setup_controller import run_setup
-from models.collaborator import Collaborator
-from models.database import session_scope
+from controllers.setup_controller import ensure_setup
+from controllers.client_controller import list_all_clients
 from models.schema import initialize_schema
-from views.main_view import show_main_menu
+from views.main_view import show_authenticated_menu, show_main_menu, show_main_message
 
 
 def run():
     initialize_schema()
 
-    with session_scope() as session:
-        stmt = select(Collaborator).limit(1)
-        is_configured = session.scalar(stmt) is not None
+    if not ensure_setup():
+        sys.exit(1)
 
-    if not is_configured and not run_setup():
-        return
+    while True:
+        choice = show_main_menu()
 
-    choice = show_main_menu()
+        match choice:
+            case "1":
+                collaborator = run_login()
+                if collaborator is None:
+                    continue
 
-    match choice:
-        case "1":
-            collaborator = run_login()
-            if collaborator is None:
+                run_authenticated_menu(collaborator)
+
+            case "2":
+                show_main_message("Fermeture de l'application")
+                sys.exit(0)
+
+            case _:
+                show_main_message("Choix invalide")
+
+
+def run_authenticated_menu(collaborator):
+    while True:
+        choice = show_authenticated_menu(collaborator)
+
+        match choice:
+            case "1":
+                list_all_clients(collaborator)
+            case "2":
+                show_main_message("Déconnexion réussie")
                 return
-            return collaborator
-
-        case "2":
-            print("Fermeture de l'application")
-            sys.exit(0)
-
-        case _:
-            print("Choix invalide")
-            sys.exit(1)
+            case _:
+                show_main_message("Choix invalide")
