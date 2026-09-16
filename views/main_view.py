@@ -9,7 +9,8 @@ def show_main_menu():
 def show_authenticated_menu(collaborator):
     print(f"\n=== {collaborator.first_name} {collaborator.last_name} ({collaborator.role.value}) ===")
     print("1. Voir tous les clients")
-    print("2. Se déconnecter")
+    print("2. Voir tous les contrats")
+    print("3. Se déconnecter")
 
     return input("Veuillez saisir votre choix : ").strip()
 

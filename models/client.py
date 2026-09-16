@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from models.base import Base
@@ -18,3 +18,4 @@ class Client(Base):
     sales_contact_id = Column(Integer, ForeignKey("collaborators.id"), nullable=False)
 
     sales_contact = relationship("Collaborator")
+    contracts = relationship("Contract", back_populates="client")

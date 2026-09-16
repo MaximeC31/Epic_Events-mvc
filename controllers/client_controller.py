@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from models.client import Client
 from models.collaborator import Role
 from models.database import session_scope
+
 from views.client_view import (
     show_client_error,
     show_clients,

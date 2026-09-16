@@ -1,9 +1,12 @@
 import sys
 
+from controllers.client_controller import list_all_clients
+from controllers.contract_controller import list_all_contracts
 from controllers.login_controller import run_login
 from controllers.setup_controller import ensure_setup
-from controllers.client_controller import list_all_clients
+
 from models.schema import initialize_schema
+
 from views.main_view import show_authenticated_menu, show_main_menu, show_main_message
 
 
@@ -40,7 +43,9 @@ def run_authenticated_menu(collaborator):
             case "1":
                 list_all_clients(collaborator)
             case "2":
+                list_all_contracts(collaborator)
+            case "3":
                 show_main_message("Déconnexion réussie")
-                return
+                break
             case _:
                 show_main_message("Choix invalide")

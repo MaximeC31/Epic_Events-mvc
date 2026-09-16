@@ -1,8 +1,11 @@
-from views.login_view import show_login_form, show_login_error
-from models.database import session_scope
+from sqlalchemy import func, select
+
 from controllers.authentication_controller import verify_password
-from models.collaborator import Role, Collaborator
-from sqlalchemy import select, func
+
+from models.collaborator import Collaborator, Role
+from models.database import session_scope
+
+from views.login_view import show_login_error, show_login_form
 
 
 def run_login():

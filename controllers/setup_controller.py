@@ -1,17 +1,19 @@
 from sqlalchemy import select
 
 from controllers.authentication_controller import hash_password
+
 from models.collaborator import Collaborator, Role
 from models.database import session_scope
+
 from views.setup_view import show_setup_error, show_setup_form, show_setup_success
 
 
 def ensure_setup():
     with session_scope() as session:
         stmt = select(Collaborator).limit(1)
-        is_configured = session.scalar(stmt) is not None
+        existing_collaborator = session.scalar(stmt)
 
-    if is_configured:
+    if existing_collaborator:
         return True
 
     return _create_initial_collaborator()
