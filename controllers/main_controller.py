@@ -2,6 +2,7 @@ import sys
 
 from controllers.client_controller import list_all_clients
 from controllers.contract_controller import list_all_contracts
+from controllers.event_controller import list_all_events
 from controllers.login_controller import run_login
 from controllers.setup_controller import ensure_setup
 
@@ -45,6 +46,8 @@ def run_authenticated_menu(collaborator):
             case "2":
                 list_all_contracts(collaborator)
             case "3":
+                list_all_events(collaborator)
+            case "4":
                 show_main_message("Déconnexion réussie")
                 break
             case _:
