@@ -1,11 +1,13 @@
 import sys
 
+from controllers.collaborator_controller import create_collaborator
 from controllers.client_controller import list_all_clients
 from controllers.contract_controller import list_all_contracts
 from controllers.event_controller import list_all_events
 from controllers.login_controller import run_login
 from controllers.setup_controller import ensure_setup
 
+from models.collaborator import Role
 from models.schema import initialize_schema
 
 from views.main_view import show_authenticated_menu, show_main_menu, show_main_message
@@ -48,7 +50,16 @@ def run_authenticated_menu(collaborator):
             case "3":
                 list_all_events(collaborator)
             case "4":
-                show_main_message("Déconnexion réussie")
-                break
+                if collaborator.role is Role.MANAGEMENT:
+                    create_collaborator(collaborator)
+                else:
+                    show_main_message("Déconnexion réussie")
+                    break
+            case "5":
+                if collaborator.role is Role.MANAGEMENT:
+                    show_main_message("Déconnexion réussie")
+                    break
+
+                show_main_message("Choix invalide")
             case _:
                 show_main_message("Choix invalide")
