@@ -14,6 +14,10 @@ def run_login():
     if not email or not password:
         return show_login_error("L'un des champs ne peut pas être vide")
 
+    if "@" not in email or "." not in email:
+        show_login_error("L'email est incorrect")
+        return
+
     with session_scope() as session:
         email = email.lower()
         stmt = select(Collaborator).where(func.lower(Collaborator.email) == email)

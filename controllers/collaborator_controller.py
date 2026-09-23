@@ -29,21 +29,34 @@ def create_collaborator(authenticated_collaborator):
         show_collaborator_creation_error("Tous les champs sont obligatoires.")
         return
 
+    if any(c.isdigit() for c in first_name):
+        show_collaborator_creation_error("Le prénom ne peut pas contenir de chiffre.")
+        return
+
+    if any(c.isdigit() for c in last_name):
+        show_collaborator_creation_error("Le nom ne peut pas contenir de chiffre.")
+        return
+
+    email_normalized = email.strip().lower()
+    if "@" not in email_normalized or "." not in email_normalized:
+        show_collaborator_creation_error("L'email est incorrect.")
+        return
+
     if password != password_confirmation:
         show_collaborator_creation_error("Les mots de passe ne correspondent pas.")
         return
 
-    roles_by_choice = {
-        "1": Role.MANAGEMENT,
-        "2": Role.SALES,
-        "3": Role.SUPPORT,
-    }
-    role = roles_by_choice.get(role_choice)
-    if role is None:
-        show_collaborator_creation_error("Rôle invalide sélectionné.")
+    roles = list(Role)
+    try:
+        role_number = int(role_choice)
+    except ValueError:
+        show_collaborator_creation_error("Le numéro de rôle est incorrect.")
         return
 
-    email_normalized = email.strip().lower()
+    if role_number < 1 or role_number > len(roles):
+        show_collaborator_creation_error("Le numéro de rôle est incorrect.")
+        return
+    role = roles[role_number - 1]
 
     try:
         with session_scope() as session:

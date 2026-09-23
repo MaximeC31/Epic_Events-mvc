@@ -42,24 +42,47 @@ def run_authenticated_menu(collaborator):
     while True:
         choice = show_authenticated_menu(collaborator)
 
-        match choice:
-            case "1":
-                list_all_clients(collaborator)
-            case "2":
-                list_all_contracts(collaborator)
-            case "3":
-                list_all_events(collaborator)
-            case "4":
-                if collaborator.role is Role.MANAGEMENT:
-                    create_collaborator(collaborator)
-                else:
-                    show_main_message("Déconnexion réussie")
-                    break
-            case "5":
-                if collaborator.role is Role.MANAGEMENT:
-                    show_main_message("Déconnexion réussie")
-                    break
-
-                show_main_message("Choix invalide")
+        match collaborator.role:
+            case Role.MANAGEMENT:
+                match choice:
+                    case "1":
+                        list_all_clients(collaborator)
+                    case "2":
+                        list_all_contracts(collaborator)
+                    case "3":
+                        list_all_events(collaborator)
+                    case "4":
+                        create_collaborator(collaborator)
+                    case "5":
+                        show_main_message("Déconnexion réussie")
+                        break
+                    case _:
+                        show_main_message("Choix invalide")
+            case Role.SALES:
+                match choice:
+                    case "1":
+                        list_all_clients(collaborator)
+                    case "2":
+                        list_all_contracts(collaborator)
+                    case "3":
+                        list_all_events(collaborator)
+                    case "4":
+                        show_main_message("Déconnexion réussie")
+                        break
+                    case _:
+                        show_main_message("Choix invalide")
+            case Role.SUPPORT:
+                match choice:
+                    case "1":
+                        list_all_clients(collaborator)
+                    case "2":
+                        list_all_contracts(collaborator)
+                    case "3":
+                        list_all_events(collaborator)
+                    case "4":
+                        show_main_message("Déconnexion réussie")
+                        break
+                    case _:
+                        show_main_message("Choix invalide")
             case _:
-                show_main_message("Choix invalide")
+                show_main_message("Rôle inconnu")

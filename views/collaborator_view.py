@@ -1,5 +1,7 @@
 from getpass import getpass
 
+from models.collaborator import Role
+
 
 def show_create_collaborator_form():
     print("\n=== Création d'un collaborateur ===")
@@ -9,11 +11,11 @@ def show_create_collaborator_form():
     password = getpass("Mot de passe : ")
     password_confirmation = getpass("Confirmez le mot de passe : ")
 
-    print("\nSélectionnez un rôle :")
-    print("1. Gestion")
-    print("2. Commercial")
-    print("3. Support")
-    role_choice = input("Choix du rôle (1-3) : ").strip()
+    roles = list(Role)
+    print("Rôles disponibles :")
+    for i, role in enumerate(roles, start=1):
+        print(f"{i}. {role.value}")
+    role_choice = input("Insérez le numéro du rôle : ").strip()
 
     return first_name, last_name, email, password, password_confirmation, role_choice
 

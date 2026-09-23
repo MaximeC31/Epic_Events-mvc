@@ -27,6 +27,20 @@ def _create_initial_collaborator():
             show_setup_error("Tous les champs sont obligatoires")
             return False
 
+        if any(c.isdigit() for c in first_name):
+            show_setup_error("Le prénom ne peut pas contenir de chiffre")
+            return False
+
+        if any(c.isdigit() for c in last_name):
+            show_setup_error("Le nom ne peut pas contenir de chiffre")
+            return False
+
+        if "@" not in email or "." not in email:
+            show_setup_error("L'email est incorrect")
+            return False
+
+        email_normalized = email.strip().lower()
+
         if password != password_confirmation:
             show_setup_error("Les mots de passe ne correspondent pas")
             return False
@@ -34,7 +48,7 @@ def _create_initial_collaborator():
         collaborator = Collaborator(
             first_name=first_name,
             last_name=last_name,
-            email=email,
+            email=email_normalized,
             password_hash=hash_password(password),
             role=Role.MANAGEMENT,
             is_active=True,
