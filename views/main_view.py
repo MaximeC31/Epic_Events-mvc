@@ -19,7 +19,8 @@ def show_authenticated_menu(collaborator):
             print("3. Voir tous les événements")
             print("4. Créer un collaborateur")
             print("5. Supprimer un collaborateur")
-            print("6. Se déconnecter")
+            print("6. Modifier un collaborateur")
+            print("7. Se déconnecter")
         case Role.SALES:
             print("1. Voir tous les clients")
             print("2. Voir tous les contrats")

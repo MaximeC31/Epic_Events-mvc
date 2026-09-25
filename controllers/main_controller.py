@@ -1,6 +1,6 @@
 import sys
 
-from controllers.collaborator_controller import create_collaborator, delete_collaborator
+from controllers.collaborator_controller import create_collaborator, delete_collaborator, update_collaborateur
 from controllers.client_controller import list_all_clients
 from controllers.contract_controller import list_all_contracts
 from controllers.event_controller import list_all_events
@@ -56,6 +56,8 @@ def run_authenticated_menu(collaborator):
                     case "5":
                         delete_collaborator(collaborator)
                     case "6":
+                        update_collaborateur(collaborator)
+                    case "7":
                         show_main_message("Déconnexion réussie")
                         break
                     case _:
