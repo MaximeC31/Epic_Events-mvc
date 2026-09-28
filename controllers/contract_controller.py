@@ -2,11 +2,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 from decorators import require_authenticated_collaborator
-
 from models.client import Client
 from models.contract import Contract
 from models.database import session_scope
-
 from views.contract_view import (
     show_contract_error,
     show_contracts,

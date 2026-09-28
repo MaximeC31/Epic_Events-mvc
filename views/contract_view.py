@@ -15,8 +15,8 @@ def show_contracts(contracts):
 
 
 def show_empty_contract_list():
-    print("Aucun contrat n'est enregistré.")
+    print("\nAucun contrat n'est enregistré.")
 
 
 def show_contract_error(message):
-    print(f"Erreur: {message}")
+    print(f"\nErreur: {message}")

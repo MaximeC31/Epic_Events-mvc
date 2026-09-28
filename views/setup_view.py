@@ -1,7 +1,7 @@
 from getpass import getpass
 
 
-def show_setup_form():
+def prompt_setup_form():
     print("\n=== Première configuration ===")
     first_name = input("Prénom : ").strip()
     last_name = input("Nom : ").strip()
@@ -13,8 +13,8 @@ def show_setup_form():
 
 
 def show_setup_success():
-    print("Compte gestion créé avec succès")
+    print("\nCompte gestion créé avec succès")
 
 
 def show_setup_error(message):
-    print(f"Erreur : {message}")
+    print(f"\nErreur : {message}")

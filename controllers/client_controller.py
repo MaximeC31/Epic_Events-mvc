@@ -3,10 +3,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
 from decorators import require_authenticated_collaborator
-
 from models.client import Client
 from models.database import session_scope
-
 from views.client_view import (
     show_client_error,
     show_clients,

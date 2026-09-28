@@ -1,25 +1,24 @@
 from sqlalchemy import func, select
 
 from controllers.authentication_controller import verify_password
-
 from models.collaborator import Collaborator, Role
 from models.database import session_scope
-
-from views.login_view import show_login_error, show_login_form
+from views.login_view import prompt_login_form, show_login_error
 
 
 def run_login():
-    email, password = show_login_form()
+    email, password = prompt_login_form()
 
     if not email or not password:
         return show_login_error("L'un des champs ne peut pas être vide")
 
-    if "@" not in email or "." not in email:
-        show_login_error("L'email est incorrect")
+    email_error = Collaborator.check_email(email)
+    if email_error:
+        show_login_error(email_error)
         return
 
     with session_scope() as session:
-        email = email.lower()
+        email = email.strip().lower()
         stmt = select(Collaborator).where(func.lower(Collaborator.email) == email)
         collaborator = session.scalar(stmt)
 

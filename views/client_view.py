@@ -11,8 +11,8 @@ def show_clients(clients):
 
 
 def show_empty_client_list():
-    print("Aucun client n'est enregistré.")
+    print("\nAucun client n'est enregistré.")
 
 
 def show_client_error(message):
-    print(f"Erreur : {message}")
+    print(f"\nErreur : {message}")

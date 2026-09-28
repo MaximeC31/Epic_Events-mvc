@@ -3,6 +3,20 @@ from getpass import getpass
 from models.collaborator import Role
 
 
+def show_collaborators(collaborators):
+    if not collaborators:
+        print("\nAucun collaborateur à afficher")
+        return
+
+    print("\n=== Collaborateurs ===")
+    for collaborator in collaborators:
+        print(
+            f"ID {collaborator.id} - {collaborator.first_name} {collaborator.last_name} "
+            f"- {collaborator.email} - {collaborator.role.value} "
+            f"- {'actif' if collaborator.is_active else 'inactif'}"
+        )
+
+
 def prompt_collaborator_creation():
     print("\n=== Création d'un collaborateur ===")
     first_name = input("Prénom : ").strip()
@@ -21,16 +35,11 @@ def prompt_collaborator_creation():
 
 
 def show_collaborator_creation_success():
-    print("Collaborateur créé avec succès")
+    print("\nCollaborateur créé avec succès")
 
 
-def prompt_collaborator_id_for_deletion(collaborators):
-    if not collaborators:
-        print("Aucun collaborateur à afficher")
-        return "0"
-
-    for collaborator in collaborators:
-        print(f"ID {collaborator.id} - {collaborator.first_name} {collaborator.last_name}")
+def prompt_collaborator_id_for_deletion():
+    print("\n=== Choix du collaborateur à supprimer ===")
     return input("ID du collaborateur (0 = annuler) : ").strip()
 
 
@@ -45,20 +54,15 @@ def prompt_collaborator_deletion_confirmation(collaborator):
 
 
 def show_collaborator_deletion_cancelled():
-    print("Annulation de la suppression")
+    print("\nAnnulation de la suppression")
 
 
 def show_collaborator_deletion_success():
-    print("Collaborateur supprimé avec succès")
+    print("\nCollaborateur supprimé avec succès")
 
 
-def prompt_collaborator_id_for_modification(collaborators):
-    if not collaborators:
-        print("Aucun collaborateur à afficher")
-        return "0"
-
-    for collaborator in collaborators:
-        print(f"ID {collaborator.id} - {collaborator.first_name} {collaborator.last_name}")
+def prompt_collaborator_id_for_modification():
+    print("\n=== Choix du collaborateur à modifier ===")
     return input("ID du collaborateur (0 = annuler) : ").strip()
 
 
@@ -91,16 +95,16 @@ def prompt_collaborator_modification(is_self_update, collaborator):
 
 
 def show_collaborator_modification_cancelled():
-    print("Annulation de la modification")
+    print("\nAnnulation de la modification")
 
 
 def show_collaborator_modification_unchanged():
-    print("Aucune modification effectuée")
+    print("\nAucune modification effectuée")
 
 
 def show_collaborator_modification_success():
-    print("Collaborateur modifié avec succès")
+    print("\nCollaborateur modifié avec succès")
 
 
 def show_collaborator_error(message):
-    print(f"Erreur : {message}")
+    print(f"\nErreur : {message}")

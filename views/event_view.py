@@ -22,8 +22,8 @@ def show_event_list(events):
 
 
 def show_empty_event_list():
-    print("Aucun événement à afficher.")
+    print("\nAucun événement à afficher.")
 
 
 def show_event_error(message):
-    print(f"Erreur : {message}")
+    print(f"\nErreur : {message}")

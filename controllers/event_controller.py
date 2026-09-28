@@ -2,11 +2,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 
 from decorators import require_authenticated_collaborator
-
 from models.contract import Contract
 from models.database import session_scope
 from models.event import Event
-
 from views.event_view import show_empty_event_list, show_event_error, show_event_list
 
 
