@@ -6,7 +6,7 @@ from controllers.collaborator_controller import (
     list_collaborators,
     update_collaborator,
 )
-from controllers.client_controller import list_all_clients
+from controllers.client_controller import create_client, delete_client, list_clients, update_client
 from controllers.contract_controller import list_all_contracts
 from controllers.event_controller import list_all_events
 from controllers.login_controller import run_login
@@ -82,13 +82,13 @@ def run_client_menu(collaborator):
             case _, "0":
                 break
             case _, "1":
-                list_all_clients(collaborator)
+                list_clients(collaborator)
             case Role.SALES, "2":
-                pass
+                create_client(collaborator)
             case Role.SALES, "3":
-                pass
+                update_client(collaborator)
             case Role.SALES, "4":
-                pass
+                delete_client(collaborator)
             case _:
                 show_main_message("Choix invalide")
 
