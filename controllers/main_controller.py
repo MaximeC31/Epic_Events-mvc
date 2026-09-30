@@ -7,7 +7,7 @@ from controllers.collaborator_controller import (
     update_collaborator,
 )
 from controllers.client_controller import create_client, delete_client, list_clients, update_client
-from controllers.contract_controller import list_all_contracts
+from controllers.contract_controller import create_contract, delete_contract, list_contracts, update_contract
 from controllers.event_controller import list_all_events
 from controllers.login_controller import run_login
 from controllers.setup_controller import ensure_setup
@@ -101,13 +101,13 @@ def run_contract_menu(collaborator):
             case _, "0":
                 break
             case _, "1":
-                list_all_contracts(collaborator)
+                list_contracts(collaborator)
             case Role.MANAGEMENT, "2":
-                pass
+                create_contract(collaborator)
             case Role.MANAGEMENT, "3":
-                pass
+                update_contract(collaborator)
             case Role.MANAGEMENT, "4":
-                pass
+                delete_contract(collaborator)
             case Role.SALES, "3":
                 pass
             case Role.SALES, "5":
