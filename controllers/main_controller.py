@@ -8,7 +8,7 @@ from controllers.collaborator_controller import (
 )
 from controllers.client_controller import create_client, delete_client, list_clients, update_client
 from controllers.contract_controller import create_contract, delete_contract, list_contracts, update_contract
-from controllers.event_controller import list_all_events
+from controllers.event_controller import assign_event_support, create_event, delete_event, list_events
 from controllers.login_controller import run_login
 from controllers.setup_controller import ensure_setup
 from models.collaborator import Role
@@ -124,13 +124,13 @@ def run_event_menu(collaborator):
             case _, "0":
                 break
             case _, "1":
-                list_all_events(collaborator)
+                list_events(collaborator)
             case Role.SALES, "2":
-                pass
+                create_event(collaborator)
             case Role.MANAGEMENT, "3":
-                pass
+                assign_event_support(collaborator)
             case Role.MANAGEMENT, "4":
-                pass
+                delete_event(collaborator)
             case Role.MANAGEMENT, "5":
                 pass
             case Role.SUPPORT, "3":
