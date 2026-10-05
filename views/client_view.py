@@ -18,10 +18,13 @@ def show_clients(clients):
     for client in clients:
         salesperson = client.sales_contact
 
-        print(f"\nID: {client.id}, Prénom: {client.first_name}, Nom: {client.last_name}")
-        print(f"Email: {client.email}, Téléphone: {client.phone}, " f"Entreprise: {client.company_name}")
-        print(f"Créé le: {client.created_at}, Dernier contact: {client.last_contact_at}")
-        print(f"Commercial associé: {salesperson.first_name} {salesperson.last_name}")
+        print(f"\nID : {client.id}, Prénom : {client.first_name}, Nom : {client.last_name}")
+        print(f"Email : {client.email}, Téléphone : {client.phone}, Entreprise : {client.company_name}")
+        print(
+            f"Créé le : {client.created_at.strftime('%d/%m/%Y %H:%M:%S')}, "
+            f"Dernier contact : {client.last_contact_at.strftime('%d/%m/%Y %H:%M:%S')}"
+        )
+        print(f"Commercial associé : {salesperson.first_name} {salesperson.last_name}")
         print("-")
 
 
@@ -66,14 +69,14 @@ def prompt_client_modification(client):
     print(f"Email : {client.email}")
     print(f"Téléphone : {client.phone}")
     print(f"Entreprise : {client.company_name}")
-    print("Valeur vide indique conserver la valeur actuelle")
+    print("Valeur vide = conserver la valeur actuelle.")
 
-    first_name = input("Prénom : ").strip()
-    last_name = input("Nom : ").strip()
-    email = input("Email : ").strip()
-    phone = input("Téléphone : ").strip()
-    company_name = input("Entreprise : ").strip()
-    return first_name, last_name, email, phone, company_name
+    first_name_input = input("Prénom : ").strip()
+    last_name_input = input("Nom : ").strip()
+    email_input = input("Email : ").strip()
+    phone_input = input("Téléphone : ").strip()
+    company_name_input = input("Entreprise : ").strip()
+    return first_name_input, last_name_input, email_input, phone_input, company_name_input
 
 
 def show_client_modification_cancelled():

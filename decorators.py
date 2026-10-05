@@ -1,6 +1,9 @@
 from functools import wraps
 
-from models.collaborator import Role
+from sqlalchemy.exc import SQLAlchemyError
+
+from models.collaborator import Collaborator, Role
+from models.database import session_scope
 
 
 def require_authenticated_collaborator(
@@ -9,14 +12,26 @@ def require_authenticated_collaborator(
 ):
     def decorator(function):
         @wraps(function)
-        def wrapper(collaborator):
-            if (
-                not collaborator
-                or not collaborator.is_active
-                or not isinstance(collaborator.role, Role)
-                or (roles is not None and collaborator.role not in roles)
-            ):
-                error_handler("Vous n'avez pas la permission de consulter cet élément")
+        def wrapper(authenticated_collaborator):
+            if authenticated_collaborator is None:
+                error_handler("Veuillez vous connecter.")
+                return
+
+            try:
+                with session_scope() as session:
+                    collaborator = session.get(Collaborator, authenticated_collaborator.id)
+                    if (
+                        collaborator is None
+                        or not collaborator.is_active
+                        or not isinstance(collaborator.role, Role)
+                        or (roles is not None and collaborator.role not in roles)
+                    ):
+                        error_handler("Accès refusé. Veuillez vous reconnecter.")
+                        return
+
+                    session.expunge(collaborator)
+            except SQLAlchemyError:
+                error_handler("Impossible de vérifier vos permissions.")
                 return
 
             return function(collaborator)

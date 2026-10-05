@@ -1,4 +1,4 @@
-def show_event_list(events):
+def show_events(events):
     print("\n=== Liste des événements ===")
 
     for event in events:
@@ -62,7 +62,7 @@ def prompt_event_id_for_deletion():
 
 def prompt_event_deletion_confirmation(event):
     print("\n=== Suppression d'un événement ===")
-    show_event_list([event])
+    show_events([event])
     print("Cette suppression est définitive.")
     return input("Tapez oui pour confirmer : ").strip() == "oui"
 
@@ -82,14 +82,15 @@ def prompt_event_id_for_modification():
 
 def prompt_event_support_assignment(event, supports):
     print("\n=== Affectation du support ===")
-    show_event_list([event])
+    show_events([event])
     if supports:
         print("Supports actifs disponibles :")
         for support in supports:
             print(f"ID {support.id} - {support.first_name} {support.last_name}")
     else:
         print("Aucun support actif disponible.")
-    print("Vide = conserver ; 0 = retirer ; ID = affecter un support actif.")
+    print("Valeur vide = conserver la valeur actuelle.")
+    print("0 = retirer ; ID = affecter un support actif.")
     return input("ID du support : ").strip()
 
 
@@ -103,3 +104,16 @@ def show_event_modification_unchanged():
 
 def show_event_modification_success():
     print("\nÉvénement modifié avec succès")
+
+
+def prompt_support_event_modification(event):
+    print("\n=== Modification de mon événement ===")
+    show_events([event])
+    print("Valeur vide = conserver la valeur actuelle.")
+    print("Notes : 0 = effacer.")
+    start_choice = input("Date de début (JJ/MM/AAAA HH:MM) : ").strip()
+    end_choice = input("Date de fin (JJ/MM/AAAA HH:MM) : ").strip()
+    location_choice = input("Lieu : ").strip()
+    participants_choice = input("Nombre de participants : ").strip()
+    notes_choice = input("Notes (0 = effacer) : ").strip()
+    return start_choice, end_choice, location_choice, participants_choice, notes_choice

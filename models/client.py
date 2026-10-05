@@ -36,8 +36,21 @@ class Client(Base):
 
     @staticmethod
     def check_phone(phone):
-        if not isinstance(phone, str) or not re.fullmatch(r"0[67][0-9]{8}", phone):
-            return "Le téléphone doit contenir 10 chiffres et commencer par 06 ou 07."
+        message = (
+            "Le téléphone doit être un numéro français à 10 chiffres ou un numéro "
+            "international commençant par + et contenant de 7 à 15 chiffres."
+        )
+        if not isinstance(phone, str):
+            return message
+        phone = phone.strip()
+        if not re.fullmatch(r"\+?[0-9]+(?:[ .-][0-9]+|[ .-]?\([0-9]+\))*", phone):
+            return message
+        digits = re.sub(r"[^0-9]", "", phone)
+        if phone.startswith("+"):
+            if not re.fullmatch(r"[1-9][0-9]{6,14}", digits):
+                return message
+        elif not re.fullmatch(r"0[1-9][0-9]{8}", digits):
+            return message
 
     @staticmethod
     def check_company_name(company_name):

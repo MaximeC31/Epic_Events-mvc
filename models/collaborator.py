@@ -24,24 +24,24 @@ class Collaborator(Base):
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
 
     @staticmethod
-    def check_name(name, label):
+    def check_name(name, label) -> str | None:
         if not isinstance(name, str) or not name.strip():
             return f"Le {label} est obligatoire."
         if any(character.isdigit() for character in name):
             return f"Le {label} ne peut pas contenir de chiffre."
 
     @staticmethod
-    def check_email(email):
+    def check_email(email) -> str | None:
         if not isinstance(email, str) or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email.strip()):
             return "L'email est incorrect."
 
     @staticmethod
-    def check_role(role):
+    def check_role(role) -> str | None:
         if not isinstance(role, Role):
             return "Le rôle est incorrect."
 
     @staticmethod
-    def parse_role_choice(choice):
+    def parse_role_choice(choice) -> Role:
         try:
             role_number = int(choice)
         except (TypeError, ValueError):
@@ -53,19 +53,26 @@ class Collaborator(Base):
         return list(Role)[role_number - 1]
 
     @staticmethod
-    def check_password_confirmation(password, confirmation):
+    def check_password(password: str) -> str | None:
+        if not password:
+            return "Le mot de passe est obligatoire."
+        if len(password.encode("utf-8")) > 72:
+            return "Le mot de passe ne peut pas dépasser 72 octets en UTF-8."
+
+    @staticmethod
+    def check_password_confirmation(password, confirmation) -> str | None:
         if password != confirmation:
             return "Les mots de passe ne correspondent pas."
 
     @staticmethod
-    def parse_status_choice(choice):
+    def parse_status_choice(choice) -> bool:
         if choice == "0":
             return False
         if choice == "1":
             return True
         raise ValueError("Le statut est incorrect.")
 
-    def validation_error(self):
+    def validation_error(self) -> str | None:
         return (
             self.check_name(self.first_name, "prénom")
             or self.check_name(self.last_name, "nom")

@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import cast
 
 from sqlalchemy import select
@@ -17,13 +18,14 @@ from views.event_view import (
     prompt_event_id_for_deletion,
     prompt_event_id_for_modification,
     prompt_event_support_assignment,
+    prompt_support_event_modification,
     show_empty_event_list,
     show_event_creation_cancelled,
     show_event_creation_success,
     show_event_deletion_cancelled,
     show_event_deletion_success,
     show_event_error,
-    show_event_list,
+    show_events,
     show_event_modification_cancelled,
     show_event_modification_success,
     show_event_modification_unchanged,
@@ -31,7 +33,7 @@ from views.event_view import (
 
 
 @require_authenticated_collaborator(show_event_error)
-def list_events(collaborator):
+def list_events(authenticated_collaborator):
     try:
         with session_scope() as session:
             query = (
@@ -53,11 +55,156 @@ def list_events(collaborator):
         show_empty_event_list()
         return
 
-    show_event_list(events)
+    show_events(events)
+
+
+@require_authenticated_collaborator(show_event_error, roles=(Role.SUPPORT,))
+def update_support_event(authenticated_collaborator):
+    try:
+        event_id = int(prompt_event_id_for_modification())
+    except ValueError:
+        show_event_error("ID invalide.")
+        return
+
+    if event_id == 0:
+        show_event_modification_cancelled()
+        return
+    if event_id < 0:
+        show_event_error("ID invalide.")
+        return
+
+    try:
+        with session_scope() as session:
+            event = session.scalar(
+                select(Event)
+                .where(Event.id == event_id)
+                .options(
+                    joinedload(Event.contract).joinedload(Contract.client),
+                    joinedload(Event.support),
+                )
+            )
+            if event is None:
+                show_event_error("Événement introuvable.")
+                return
+            if cast(int | None, event.support_collaborator_id) != authenticated_collaborator.id:
+                show_event_error("Vous ne pouvez modifier que vos événements attribués.")
+                return
+            session.expunge_all()
+    except SQLAlchemyError:
+        show_event_error("Impossible de récupérer l'événement.")
+        return
+
+    start_choice, end_choice, location_choice, participants_choice, notes_choice = (
+        prompt_support_event_modification(event)
+    )
+    try:
+        parsed_start = Event.parse_datetime(start_choice) if start_choice else None
+        parsed_end = Event.parse_datetime(end_choice) if end_choice else None
+    except ValueError as error:
+        show_event_error(str(error))
+        return
+
+    try:
+        parsed_participants = int(participants_choice) if participants_choice else None
+    except ValueError:
+        show_event_error("Le nombre de participants doit être un entier.")
+        return
+
+    try:
+        with session_scope() as session:
+            current_event = session.get(Event, event_id)
+            if current_event is None:
+                show_event_error("Événement introuvable.")
+                return
+            if cast(int | None, current_event.support_collaborator_id) != authenticated_collaborator.id:
+                show_event_error("Vous ne pouvez modifier que vos événements attribués.")
+                return
+
+            start_datetime = (
+                parsed_start if parsed_start is not None else cast(datetime, current_event.start_datetime)
+            )
+            end_datetime = (
+                parsed_end if parsed_end is not None else cast(datetime, current_event.end_datetime)
+            )
+            location = location_choice if location_choice else cast(str, current_event.location)
+            number_of_participants = (
+                parsed_participants
+                if parsed_participants is not None
+                else cast(int, current_event.number_of_participants)
+            )
+            if notes_choice == "":
+                notes = cast(str | None, current_event.notes)
+            elif notes_choice == "0":
+                notes = None
+            else:
+                notes = notes_choice
+
+            updated = Event(
+                contract_id=cast(int, current_event.contract_id),
+                support_collaborator_id=cast(int | None, current_event.support_collaborator_id),
+                start_datetime=start_datetime,
+                end_datetime=end_datetime,
+                location=location,
+                number_of_participants=number_of_participants,
+                notes=notes,
+            )
+            validation_error = updated.validation_error()
+            if validation_error:
+                show_event_error(validation_error)
+                return
+
+            if (start_datetime, end_datetime, location, number_of_participants, notes) == (
+                current_event.start_datetime,
+                current_event.end_datetime,
+                current_event.location,
+                current_event.number_of_participants,
+                current_event.notes,
+            ):
+                show_event_modification_unchanged()
+                return
+
+            setattr(current_event, "start_datetime", start_datetime)
+            setattr(current_event, "end_datetime", end_datetime)
+            setattr(current_event, "location", location)
+            setattr(current_event, "number_of_participants", number_of_participants)
+            setattr(current_event, "notes", notes)
+    except IntegrityError:
+        show_event_error("Impossible de modifier l'événement : données invalides.")
+        return
+    except SQLAlchemyError:
+        show_event_error("Impossible de modifier l'événement.")
+        return
+
+    show_event_modification_success()
+
+
+@require_authenticated_collaborator(show_event_error, roles=(Role.SUPPORT,))
+def list_assigned_support_events(authenticated_collaborator):
+    try:
+        with session_scope() as session:
+            query = (
+                select(Event)
+                .where(Event.support_collaborator_id == authenticated_collaborator.id)
+                .options(
+                    joinedload(Event.contract).joinedload(Contract.client),
+                    joinedload(Event.support),
+                )
+                .order_by(Event.start_datetime.asc(), Event.id.asc())
+            )
+            events = session.scalars(query).all()
+            session.expunge_all()
+    except SQLAlchemyError:
+        show_event_error("Impossible de récupérer vos événements attribués.")
+        return
+
+    if not events:
+        show_empty_event_list()
+        return
+    show_events(events)
 
 
 @require_authenticated_collaborator(show_event_error, roles=(Role.SALES,))
-def create_event(collaborator):
+def create_event(authenticated_collaborator):
     try:
         with session_scope() as session:
             query = (
@@ -65,7 +212,7 @@ def create_event(collaborator):
                 .join(Contract.client)
                 .where(
                     Contract.is_signed.is_(True),
-                    Client.sales_contact_id == collaborator.id,
+                    Client.sales_contact_id == authenticated_collaborator.id,
                 )
                 .options(joinedload(Contract.client))
                 .order_by(Contract.created_at.desc(), Contract.id.desc())
@@ -134,7 +281,7 @@ def create_event(collaborator):
             if (
                 contract is None
                 or not cast(bool, contract.is_signed)
-                or contract.client.sales_contact_id != collaborator.id
+                or contract.client.sales_contact_id != authenticated_collaborator.id
             ):
                 show_event_error("Contrat indisponible pour créer un événement.")
                 return
@@ -151,7 +298,7 @@ def create_event(collaborator):
 
 
 @require_authenticated_collaborator(show_event_error, roles=(Role.MANAGEMENT,))
-def delete_event(collaborator):
+def delete_event(authenticated_collaborator):
     try:
         event_id = int(prompt_event_id_for_deletion())
     except ValueError:
@@ -189,11 +336,11 @@ def delete_event(collaborator):
 
     try:
         with session_scope() as session:
-            current = session.get(Event, event_id)
-            if current is None:
+            current_event = session.get(Event, event_id)
+            if current_event is None:
                 show_event_error("Événement introuvable.")
                 return
-            session.delete(current)
+            session.delete(current_event)
     except SQLAlchemyError:
         show_event_error("Impossible de supprimer l'événement.")
         return
@@ -202,7 +349,7 @@ def delete_event(collaborator):
 
 
 @require_authenticated_collaborator(show_event_error, roles=(Role.MANAGEMENT,))
-def assign_event_support(collaborator):
+def assign_event_support(authenticated_collaborator):
     try:
         event_id = int(prompt_event_id_for_modification())
     except ValueError:
@@ -262,8 +409,8 @@ def assign_event_support(collaborator):
 
     try:
         with session_scope() as session:
-            current = session.get(Event, event_id)
-            if current is None:
+            current_event = session.get(Event, event_id)
+            if current_event is None:
                 show_event_error("Événement introuvable.")
                 return
 
@@ -277,13 +424,38 @@ def assign_event_support(collaborator):
                     show_event_error("Support actif introuvable.")
                     return
 
-            if support_id == cast(int | None, current.support_collaborator_id):
+            if support_id == cast(int | None, current_event.support_collaborator_id):
                 show_event_modification_unchanged()
                 return
 
-            setattr(current, "support_collaborator_id", support_id)
+            setattr(current_event, "support_collaborator_id", support_id)
     except SQLAlchemyError:
         show_event_error("Impossible de modifier l'affectation du support.")
         return
 
     show_event_modification_success()
+
+
+@require_authenticated_collaborator(show_event_error, roles=(Role.MANAGEMENT,))
+def list_events_without_support(authenticated_collaborator):
+    try:
+        with session_scope() as session:
+            query = (
+                select(Event)
+                .where(Event.support_collaborator_id.is_(None))
+                .options(
+                    joinedload(Event.contract).joinedload(Contract.client),
+                    joinedload(Event.support),
+                )
+                .order_by(Event.start_datetime.asc(), Event.id.asc())
+            )
+            events = session.scalars(query).all()
+            session.expunge_all()
+    except SQLAlchemyError:
+        show_event_error("Impossible de récupérer les événements sans support.")
+        return
+
+    if not events:
+        show_empty_event_list()
+        return
+    show_events(events)

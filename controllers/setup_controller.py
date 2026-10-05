@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from controllers.authentication_controller import hash_password
 from models.collaborator import Collaborator, Role
@@ -7,9 +8,13 @@ from views.setup_view import prompt_setup_form, show_setup_error, show_setup_suc
 
 
 def ensure_setup():
-    with session_scope() as session:
-        stmt = select(Collaborator).limit(1)
-        existing_collaborator = session.scalar(stmt)
+    try:
+        with session_scope() as session:
+            query = select(Collaborator).limit(1)
+            existing_collaborator = session.scalar(query)
+    except SQLAlchemyError:
+        show_setup_error("Une erreur est survenue lors de la vérification de la configuration")
+        return False
 
     if existing_collaborator:
         return True
@@ -26,6 +31,11 @@ def _create_initial_collaborator():
             return False
 
         email_normalized = email.strip().lower()
+
+        password_error = Collaborator.check_password(password)
+        if password_error:
+            show_setup_error(password_error)
+            return False
 
         password_error = Collaborator.check_password_confirmation(password, password_confirmation)
         if password_error:
@@ -52,6 +62,9 @@ def _create_initial_collaborator():
         show_setup_success()
         return True
 
-    except Exception:
+    except ValueError:
+        show_setup_error("Une erreur est survenue lors du hachage du mot de passe")
+        return False
+    except SQLAlchemyError:
         show_setup_error("Une erreur est survenue lors de la configuration")
         return False

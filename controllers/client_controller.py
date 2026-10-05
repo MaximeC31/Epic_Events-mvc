@@ -117,8 +117,8 @@ def delete_client(authenticated_collaborator):
 
     try:
         with session_scope() as session:
-            current = session.get(Client, client_id)
-            if current is None or current.sales_contact_id != authenticated_collaborator.id:
+            current_client = session.get(Client, client_id)
+            if current_client is None or current_client.sales_contact_id != authenticated_collaborator.id:
                 show_client_error("Client introuvable ou non attribué.")
                 return
 
@@ -127,7 +127,7 @@ def delete_client(authenticated_collaborator):
                 show_client_error("Impossible de supprimer un client associé à un contrat.")
                 return
 
-            session.delete(current)
+            session.delete(current_client)
     except SQLAlchemyError:
         show_client_error("Impossible de supprimer le client.")
         return
@@ -160,49 +160,50 @@ def update_client(authenticated_collaborator):
         show_client_error("Impossible de récupérer le client.")
         return
 
-    first_name, last_name, email, phone, company_name = prompt_client_modification(client)
-    first_name = client.first_name if first_name == "" else first_name
-    last_name = client.last_name if last_name == "" else last_name
-    email = client.email if email == "" else email.lower()
-    phone = client.phone if phone == "" else phone
-    company_name = client.company_name if company_name == "" else company_name
-
-    updated = Client(
-        first_name=first_name,
-        last_name=last_name,
-        email=email,
-        phone=phone,
-        company_name=company_name,
+    first_name_input, last_name_input, email_input, phone_input, company_name_input = (
+        prompt_client_modification(client)
     )
-
-    validation_error = updated.validation_error()
-    if validation_error:
-        show_client_error(validation_error)
-        return
 
     try:
         with session_scope() as session:
-            current = session.get(Client, client_id)
-            if current is None or current.sales_contact_id != authenticated_collaborator.id:
+            current_client = session.get(Client, client_id)
+            if current_client is None or current_client.sales_contact_id != authenticated_collaborator.id:
                 show_client_error("Client introuvable ou non attribué.")
                 return
 
+            first_name = current_client.first_name if first_name_input == "" else first_name_input
+            last_name = current_client.last_name if last_name_input == "" else last_name_input
+            email = current_client.email if email_input == "" else email_input.lower()
+            phone = current_client.phone if phone_input == "" else phone_input
+            company_name = current_client.company_name if company_name_input == "" else company_name_input
+            updated = Client(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                phone=phone,
+                company_name=company_name,
+            )
+            validation_error = updated.validation_error()
+            if validation_error:
+                show_client_error(validation_error)
+                return
+
             if (first_name, last_name, email, phone, company_name) == (
-                current.first_name,
-                current.last_name,
-                current.email,
-                current.phone,
-                current.company_name,
+                current_client.first_name,
+                current_client.last_name,
+                current_client.email,
+                current_client.phone,
+                current_client.company_name,
             ):
                 show_client_modification_unchanged()
                 return
 
-            setattr(current, "first_name", first_name)
-            setattr(current, "last_name", last_name)
-            setattr(current, "email", email)
-            setattr(current, "phone", phone)
-            setattr(current, "company_name", company_name)
-            setattr(current, "last_contact_at", datetime.now())
+            setattr(current_client, "first_name", first_name)
+            setattr(current_client, "last_name", last_name)
+            setattr(current_client, "email", email)
+            setattr(current_client, "phone", phone)
+            setattr(current_client, "company_name", company_name)
+            setattr(current_client, "last_contact_at", datetime.now())
 
     except IntegrityError:
         show_client_error("Impossible de modifier le client : données invalides.")

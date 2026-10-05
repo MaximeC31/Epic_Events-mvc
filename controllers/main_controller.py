@@ -1,5 +1,8 @@
 import sys
 
+import sentry_sdk
+from sqlalchemy.exc import SQLAlchemyError
+
 from controllers.collaborator_controller import (
     create_collaborator,
     delete_collaborator,
@@ -7,8 +10,23 @@ from controllers.collaborator_controller import (
     update_collaborator,
 )
 from controllers.client_controller import create_client, delete_client, list_clients, update_client
-from controllers.contract_controller import create_contract, delete_contract, list_contracts, update_contract
-from controllers.event_controller import assign_event_support, create_event, delete_event, list_events
+from controllers.contract_controller import (
+    create_contract,
+    delete_contract,
+    list_contracts,
+    list_filtered_sales_contracts,
+    update_contract,
+    update_sales_contract,
+)
+from controllers.event_controller import (
+    assign_event_support,
+    create_event,
+    delete_event,
+    list_assigned_support_events,
+    list_events,
+    list_events_without_support,
+    update_support_event,
+)
 from controllers.login_controller import run_login
 from controllers.setup_controller import ensure_setup
 from models.collaborator import Role
@@ -22,10 +40,16 @@ from views.main_view import (
     prompt_main_menu,
     show_main_message,
 )
+from views.setup_view import show_setup_error
 
 
 def run():
-    initialize_schema()
+    try:
+        initialize_schema()
+    except SQLAlchemyError as error:
+        sentry_sdk.capture_exception(error)
+        show_setup_error("Impossible d'initialiser la base de données.")
+        sys.exit(1)
 
     if not ensure_setup():
         sys.exit(1)
@@ -39,122 +63,122 @@ def run():
                 sys.exit(0)
 
             case "1":
-                collaborator = run_login()
-                if collaborator is None:
+                authenticated_collaborator = run_login()
+                if authenticated_collaborator is None:
                     continue
 
-                run_authenticated_menu(collaborator)
+                run_authenticated_menu(authenticated_collaborator)
 
             case _:
                 show_main_message("Choix invalide")
 
 
-def run_authenticated_menu(collaborator):
+def run_authenticated_menu(authenticated_collaborator):
     while True:
-        choice = prompt_authenticated_menu(collaborator)
+        choice = prompt_authenticated_menu(authenticated_collaborator)
 
-        match collaborator.role, choice:
+        match authenticated_collaborator.role, choice:
             case _, "0":
                 show_main_message("Déconnexion réussie")
                 break
 
             case _, "1":
-                run_client_menu(collaborator)
+                run_client_menu(authenticated_collaborator)
 
             case _, "2":
-                run_contract_menu(collaborator)
+                run_contract_menu(authenticated_collaborator)
 
             case _, "3":
-                run_event_menu(collaborator)
+                run_event_menu(authenticated_collaborator)
 
             case Role.MANAGEMENT, "4":
-                run_collaborator_menu(collaborator)
+                run_collaborator_menu(authenticated_collaborator)
 
             case _:
                 show_main_message("Choix invalide")
 
 
-def run_client_menu(collaborator):
+def run_client_menu(authenticated_collaborator):
     while True:
-        choice = prompt_client_menu(collaborator)
+        choice = prompt_client_menu(authenticated_collaborator)
 
-        match collaborator.role, choice:
+        match authenticated_collaborator.role, choice:
             case _, "0":
                 break
             case _, "1":
-                list_clients(collaborator)
+                list_clients(authenticated_collaborator)
             case Role.SALES, "2":
-                create_client(collaborator)
+                create_client(authenticated_collaborator)
             case Role.SALES, "3":
-                update_client(collaborator)
+                update_client(authenticated_collaborator)
             case Role.SALES, "4":
-                delete_client(collaborator)
+                delete_client(authenticated_collaborator)
             case _:
                 show_main_message("Choix invalide")
 
 
-def run_contract_menu(collaborator):
+def run_contract_menu(authenticated_collaborator):
     while True:
-        choice = prompt_contract_menu(collaborator)
+        choice = prompt_contract_menu(authenticated_collaborator)
 
-        match collaborator.role, choice:
+        match authenticated_collaborator.role, choice:
             case _, "0":
                 break
             case _, "1":
-                list_contracts(collaborator)
+                list_contracts(authenticated_collaborator)
             case Role.MANAGEMENT, "2":
-                create_contract(collaborator)
+                create_contract(authenticated_collaborator)
             case Role.MANAGEMENT, "3":
-                update_contract(collaborator)
+                update_contract(authenticated_collaborator)
             case Role.MANAGEMENT, "4":
-                delete_contract(collaborator)
+                delete_contract(authenticated_collaborator)
             case Role.SALES, "3":
-                pass
+                update_sales_contract(authenticated_collaborator)
             case Role.SALES, "5":
-                pass
+                list_filtered_sales_contracts(authenticated_collaborator)
             case _:
                 show_main_message("Choix invalide")
 
 
-def run_event_menu(collaborator):
+def run_event_menu(authenticated_collaborator):
     while True:
-        choice = prompt_event_menu(collaborator)
+        choice = prompt_event_menu(authenticated_collaborator)
 
-        match collaborator.role, choice:
+        match authenticated_collaborator.role, choice:
             case _, "0":
                 break
             case _, "1":
-                list_events(collaborator)
+                list_events(authenticated_collaborator)
             case Role.SALES, "2":
-                create_event(collaborator)
+                create_event(authenticated_collaborator)
             case Role.MANAGEMENT, "3":
-                assign_event_support(collaborator)
+                assign_event_support(authenticated_collaborator)
             case Role.MANAGEMENT, "4":
-                delete_event(collaborator)
+                delete_event(authenticated_collaborator)
             case Role.MANAGEMENT, "5":
-                pass
+                list_events_without_support(authenticated_collaborator)
             case Role.SUPPORT, "3":
-                pass
+                update_support_event(authenticated_collaborator)
             case Role.SUPPORT, "5":
-                pass
+                list_assigned_support_events(authenticated_collaborator)
             case _:
                 show_main_message("Choix invalide")
 
 
-def run_collaborator_menu(collaborator):
+def run_collaborator_menu(authenticated_collaborator):
     while True:
-        choice = prompt_collaborator_menu(collaborator)
+        choice = prompt_collaborator_menu(authenticated_collaborator)
 
-        match collaborator.role, choice:
+        match authenticated_collaborator.role, choice:
             case _, "0":
                 break
             case Role.MANAGEMENT, "1":
-                list_collaborators(collaborator)
+                list_collaborators(authenticated_collaborator)
             case Role.MANAGEMENT, "2":
-                create_collaborator(collaborator)
+                create_collaborator(authenticated_collaborator)
             case Role.MANAGEMENT, "3":
-                update_collaborator(collaborator)
+                update_collaborator(authenticated_collaborator)
             case Role.MANAGEMENT, "4":
-                delete_collaborator(collaborator)
+                delete_collaborator(authenticated_collaborator)
             case _:
                 show_main_message("Choix invalide")

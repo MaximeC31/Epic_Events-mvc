@@ -27,8 +27,8 @@ def prompt_collaborator_creation():
 
     roles = list(Role)
     print("Rôles disponibles :")
-    for i, role in enumerate(roles, start=1):
-        print(f"{i}. {role.value}")
+    for role_number, role in enumerate(roles, start=1):
+        print(f"{role_number}. {role.value}")
     role_choice = input("Insérez le numéro du rôle : ").strip()
 
     return first_name, last_name, email, password, password_confirmation, role_choice
@@ -45,7 +45,7 @@ def prompt_collaborator_id_for_deletion():
 
 def prompt_collaborator_deletion_confirmation(collaborator):
     print("\n=== Suppression d'un collaborateur ===")
-    print(f"Id : {collaborator.id}")
+    print(f"ID : {collaborator.id}")
     print(f"Identité : {collaborator.first_name} {collaborator.last_name}")
     print(f"Email : {collaborator.email}")
     print(f"Rôle : {collaborator.role.value}")
@@ -68,30 +68,30 @@ def prompt_collaborator_id_for_modification():
 
 def prompt_collaborator_modification(is_self_update, collaborator):
     print("\n=== Modification du collaborateur ===")
-    print(f"Id : {collaborator.id}")
+    print(f"ID : {collaborator.id}")
     print(f"Identité : {collaborator.first_name} {collaborator.last_name}")
     print(f"Email : {collaborator.email}")
     print(f"Rôle : {collaborator.role.value}")
     print(f"Statut : {'actif' if collaborator.is_active else 'inactif'}")
 
-    print("Valeur vide indique conserver la valeur actuelle")
-    first_name = input("Prénom : ").strip()
-    last_name = input("Nom : ").strip()
-    email = input("Email : ").strip()
+    print("Valeur vide = conserver la valeur actuelle.")
+    first_name_input = input("Prénom : ").strip()
+    last_name_input = input("Nom : ").strip()
+    email_input = input("Email : ").strip()
 
     if not is_self_update:
         roles = list(Role)
         print("Rôles disponibles :")
-        for i, role in enumerate(roles, start=1):
-            print(f"{i}. {role.value}")
+        for role_number, role in enumerate(roles, start=1):
+            print(f"{role_number}. {role.value}")
         role_choice = input("Insérez le numéro du rôle : ").strip()
 
-        is_active = input("Insérez le statut (0 = inactif, 1 = actif) : ").strip()
+        status_choice = input("Insérez le statut (0 = inactif, 1 = actif) : ").strip()
     else:
         role_choice = ""
-        is_active = ""
+        status_choice = ""
 
-    return first_name, last_name, email, role_choice, is_active
+    return first_name_input, last_name_input, email_input, role_choice, status_choice
 
 
 def show_collaborator_modification_cancelled():

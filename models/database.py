@@ -1,6 +1,7 @@
 import os
 from contextlib import contextmanager
 
+import sentry_sdk
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -21,8 +22,9 @@ def session_scope():
     try:
         yield session
         session.commit()
-    except Exception:
+    except Exception as error:
         session.rollback()
+        sentry_sdk.capture_exception(error)
         raise
     finally:
         session.close()
